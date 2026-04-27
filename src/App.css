@@ -1,0 +1,158 @@
+.app-container {
+  max-width: 480px; /* Mobile app feel */
+  margin: 0 auto;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  box-shadow: 0 0 20px rgba(0,0,0,0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.header {
+  padding: 1.5rem 1.5rem 1rem;
+  background: white;
+  border-bottom: 1px solid var(--surface-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.main-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-bottom: 5rem; /* Space for bottom nav if any */
+}
+
+/* Component specific styles */
+.sos-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+.sos-button {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--danger-color), #c53030);
+  color: white;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  border: 4px solid white;
+  box-shadow: 0 10px 25px rgba(245, 101, 101, 0.4);
+  transition: transform 0.1s;
+}
+
+.sos-button:active {
+  transform: scale(0.95);
+}
+
+.sos-button.active {
+  background: linear-gradient(145deg, #c53030, #9b2c2c);
+  animation: pulse 1s infinite;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 1.5rem;
+}
+
+.status-badge.safe {
+  background-color: var(--safe-light);
+  color: #276749;
+}
+
+.status-badge.alert {
+  background-color: #fed7d7;
+  color: #9b2c2c;
+  animation: pulse 2s infinite;
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1.25rem 1rem;
+  background-color: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--shadow-sm);
+  gap: 0.75rem;
+}
+
+.action-card:hover {
+  background-color: var(--primary-light);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.action-icon-wrapper {
+  padding: 0.75rem;
+  border-radius: 50%;
+  background-color: var(--bg-color);
+  color: var(--primary-color);
+}
+
+.action-card:hover .action-icon-wrapper {
+  background-color: white;
+}
+
+.map-placeholder {
+  width: 100%;
+  height: 200px;
+  background-color: #e2e8f0;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  background-image: linear-gradient(45deg, #edf2f7 25%, transparent 25%, transparent 75%, #edf2f7 75%, #edf2f7), 
+                    linear-gradient(45deg, #edf2f7 25%, transparent 25%, transparent 75%, #edf2f7 75%, #edf2f7);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+.contact-item:last-child {
+  border-bottom: none;
+}
+.contact-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
