@@ -1,170 +1,86 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Phone, Plus, Trash2, X } from 'lucide-react';
+import { Users, Plus, Trash2, X } from 'lucide-react';
 
 export default function ContactsAndHelp() {
   const [contacts, setContacts] = useState([]);
-  const [isAdding, setIsAdding] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [newPhone, setNewPhone] = useState('');
-  const [error, setError] = useState('');
+  const [adding, setAdding] = useState(false);
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
 
-  // Load contacts on mount
   useEffect(() => {
     const saved = localStorage.getItem('safeguard_contacts');
-    if (saved) {
-      setContacts(JSON.parse(saved));
-    } else {
-      const defaultContacts = [
-        { id: 1, name: 'Mom', phone: '+1 234 567 8900', initial: 'M' },
-        { id: 2, name: 'Brother', phone: '+1 098 765 4321', initial: 'B' },
-      ];
-      setContacts(defaultContacts);
-      localStorage.setItem('safeguard_contacts', JSON.stringify(defaultContacts));
-    }
+    setContacts(saved ? JSON.parse(saved) : [
+      { id: 1, name: 'Mom', phone: '+91 98765 43210' },
+      { id: 2, name: 'Brother', phone: '+91 87654 32109' },
+    ]);
   }, []);
 
-  const saveContacts = (updatedList) => {
-    setContacts(updatedList);
-    localStorage.setItem('safeguard_contacts', JSON.stringify(updatedList));
+  const save = (list) => { setContacts(list); localStorage.setItem('safeguard_contacts', JSON.stringify(list)); };
+
+  const addContact = () => {
+    if (!name.trim() || !phone.trim()) return;
+    save([...contacts, { id: Date.now(), name: name.trim(), phone: phone.trim() }]);
+    setName(''); setPhone(''); setAdding(false);
   };
 
-  const handleAddContact = (e) => {
-    e.preventDefault();
-    if (!newName.trim() || !newPhone.trim()) {
-      setError('Please fill in both name and phone number.');
-      return;
-    }
-
-    const newContact = {
-      id: Date.now(),
-      name: newName.trim(),
-      phone: newPhone.trim(),
-      initial: newName.trim().charAt(0).toUpperCase() || '?'
-    };
-
-    const updated = [...contacts, newContact];
-    saveContacts(updated);
-    
-    // Reset Form
-    setNewName('');
-    setNewPhone('');
-    setIsAdding(false);
-    setError('');
-  };
-
-  const handleDeleteContact = (id) => {
-    const updated = contacts.filter(c => c.id !== id);
-    saveContacts(updated);
-  };
+  const del = (id) => save(contacts.filter(c => c.id !== id));
 
   return (
-    <div className="card contacts-tab-card" style={{ padding: '0', overflow: 'hidden' }}>
-      <div className="p-4 border-b" style={{ borderColor: 'var(--surface-border)' }}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="icon-btn" style={{ backgroundColor: '#c6f6d5', color: '#38a169', width: '32px', height: '32px', padding: '0' }}>
-              <Users size={16} />
-            </div>
-            <h2 className="text-lg font-bold">Trusted Contacts</h2>
+    <>
+      <div className="card">
+        <div className="card-header">
+          <div className="card-title">
+            <div className="card-icon ci-green"><Users size={16} /></div>
+            Trusted contacts
           </div>
-          {!isAdding ? (
-            <button 
-              className="add-contact-trigger flex items-center gap-1 text-sm font-semibold" 
-              style={{ color: 'var(--primary-color)' }}
-              onClick={() => { setIsAdding(true); setError(''); }}
-            >
-              <Plus size={16} /> Add
-            </button>
-          ) : (
-            <button 
-              className="text-sm font-semibold flex items-center gap-1" 
-              style={{ color: 'var(--text-secondary)' }}
-              onClick={() => setIsAdding(false)}
-            >
-              <X size={16} /> Cancel
-            </button>
-          )}
-        </div>
-      </div>
-
-      {isAdding && (
-        <form onSubmit={handleAddContact} className="p-4 bg-gray-50 border-b flex-col gap-3" style={{ backgroundColor: '#f7fafc', borderColor: 'var(--surface-border)' }}>
-          <h3 className="text-xs font-bold text-secondary mb-1">ADD NEW TRUSTED CONTACT</h3>
-          
-          <div className="flex-col gap-1">
-            <label className="text-xs font-semibold text-secondary">Full Name</label>
-            <input 
-              type="text" 
-              value={newName} 
-              onChange={(e) => setNewName(e.target.value)} 
-              placeholder="e.g. Dad, Sister, Friend" 
-              className="contact-form-input"
-            />
-          </div>
-
-          <div className="flex-col gap-1 mt-2">
-            <label className="text-xs font-semibold text-secondary">Phone Number</label>
-            <input 
-              type="tel" 
-              value={newPhone} 
-              onChange={(e) => setNewPhone(e.target.value)} 
-              placeholder="e.g. +1 555-0199" 
-              className="contact-form-input"
-            />
-          </div>
-
-          {error && (
-            <span className="text-xs text-danger-color font-semibold mt-1 block">{error}</span>
-          )}
-
-          <button type="submit" className="contact-submit-btn mt-2">
-            Save Contact
+          <button onClick={() => setAdding(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--primary-color)', fontWeight: 500 }}>
+            {adding ? <><X size={15} /> Cancel</> : <><Plus size={15} /> Add</>}
           </button>
-        </form>
-      )}
+        </div>
 
-      <div className="flex-col contacts-list-container">
-        {contacts.length === 0 ? (
-          <div className="p-8 text-center text-secondary text-sm">
-            No trusted contacts added yet. Add contacts to notify them in case of emergency.
+        {adding && (
+          <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: '0.5px solid var(--surface-border)' }}>
+            <div className="section-label">New contact</div>
+            <input className="contact-form-input" placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
+            <input className="contact-form-input" placeholder="Phone number" type="tel" value={phone} onChange={e => setPhone(e.target.value)} />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="secondary-btn" style={{ flex: 1 }} onClick={() => setAdding(false)}>Cancel</button>
+              <button className="primary-btn" style={{ flex: 2 }} onClick={addContact}>Save</button>
+            </div>
           </div>
-        ) : (
-          contacts.map(contact => (
-            <div key={contact.id} className="contact-item flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="contact-avatar">{contact.initial}</div>
-                <div>
-                  <p className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{contact.name}</p>
-                  <p className="text-xs text-secondary">{contact.phone}</p>
-                </div>
+        )}
+
+        {contacts.length === 0
+          ? <p style={{ fontSize: 13, color: 'var(--text-secondary)', textAlign: 'center', padding: '16px 0' }}>No contacts yet.</p>
+          : contacts.map(c => (
+            <div className="contact-item" key={c.id}>
+              <div className="contact-avatar">{c.name[0].toUpperCase()}</div>
+              <div>
+                <div className="contact-name">{c.name}</div>
+                <div className="contact-phone">{c.phone}</div>
               </div>
-              <button 
-                className="delete-contact-btn p-1 text-secondary hover:text-danger"
-                onClick={() => handleDeleteContact(contact.id)}
-                title="Remove Contact"
-                style={{ color: '#a0aec0' }}
-              >
-                <Trash2 size={16} />
-              </button>
+              <button className="contact-delete" onClick={() => del(c.id)}><Trash2 size={16} /></button>
             </div>
           ))
-        )}
+        }
       </div>
 
-      <div className="p-4 bg-gray-50 border-t" style={{ backgroundColor: '#f7fafc', borderColor: 'var(--surface-border)', borderBottomLeftRadius: 'var(--radius-lg)', borderBottomRightRadius: 'var(--radius-lg)' }}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-danger-color">
-            <Phone size={18} color="#e53e3e" />
-            <div className="flex-col">
-              <span className="font-bold text-sm" style={{ color: '#e53e3e', lineHeight: '1' }}>Nearby Police: 911</span>
-              <span className="text-secondary" style={{ fontSize: '0.65rem' }}>Direct official help hotline</span>
-            </div>
+      <div className="card">
+        <div className="emergency-row">
+          <div>
+            <div className="emergency-label">Police emergency</div>
+            <div className="emergency-sub">100 — direct emergency line</div>
           </div>
-          <a href="tel:911" className="px-4 py-1.5 rounded-full text-xs font-bold text-white text-center" style={{ backgroundColor: '#e53e3e', textDecoration: 'none' }}>
-            Call Now
-          </a>
+          <a href="tel:100" className="call-now-btn">Call now</a>
+        </div>
+        <div className="emergency-row" style={{ background: '#fff7ed', borderColor: '#fed7aa', marginTop: 8 }}>
+          <div>
+            <div className="emergency-label" style={{ color: '#92400e' }}>Women's helpline</div>
+            <div className="emergency-sub" style={{ color: '#b45309' }}>1091 — national helpline</div>
+          </div>
+          <a href="tel:1091" className="call-now-btn" style={{ background: '#d97706' }}>Call</a>
         </div>
       </div>
-    </div>
+    </>
   );
 }
