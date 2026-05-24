@@ -1,43 +1,36 @@
-import { useState, useRef } from 'react';
+import React from 'react';
 import { ShieldAlert, CheckCircle2 } from 'lucide-react';
 
-export default function SOSButton() {
-  const [isAlertActive, setIsAlertActive] = useState(false);
-  const audioRef = useRef(null);
+export default function SOSButton({ isSOSActive, setIsSOSActive, addLog }) {
   
-  if (!audioRef.current) {
-    audioRef.current = new Audio('/siren.mp3');
-    audioRef.current.loop = true;
-  }
-
   const handleSOSClick = () => {
-    setIsAlertActive(!isAlertActive);
-    if (!isAlertActive) {
-      // Simulate sending alerts
-      audioRef.current.play().catch(e => console.log("Audio play blocked by browser:", e));
+    const nextState = !isSOSActive;
+    setIsSOSActive(nextState);
+    if (nextState) {
       console.log('SOS Alert Triggered! Location shared with emergency contacts.');
-      if ("vibrate" in navigator) {
-        navigator.vibrate([200, 100, 200, 100, 500]);
+      if (addLog) {
+        addLog('SOS Alert Triggered! Location shared & siren playing.', 'danger');
       }
     } else {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
       console.log('SOS Alert Cancelled.');
+      if (addLog) {
+        addLog('SOS Alert Cancelled and Siren stopped.', 'info');
+      }
     }
   };
 
   return (
     <div className="sos-container">
       <button 
-        className={`sos-button ${isAlertActive ? 'active' : 'animate-pulse-btn'}`}
+        className={`sos-button ${isSOSActive ? 'active' : 'animate-pulse-btn'}`}
         onClick={handleSOSClick}
         aria-label="SOS Button"
       >
         SOS
       </button>
 
-      <div className={`status-badge ${isAlertActive ? 'alert' : 'safe'}`}>
-        {isAlertActive ? (
+      <div className={`status-badge ${isSOSActive ? 'alert' : 'safe'}`}>
+        {isSOSActive ? (
           <>
             <ShieldAlert size={18} />
             Alert Active - Help is on the way
