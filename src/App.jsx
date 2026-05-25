@@ -24,9 +24,7 @@ function App() {
     const val = localStorage.getItem('safeguard_emergency_toggles');
     return val ? JSON.parse(val) : { alertPolice: true, shareLocation: true, recordAudio: true, sendSms: true };
   });
-  const [googleMapsApiKey, setGoogleMapsApiKey] = useState(() =>
-    localStorage.getItem('safeguard_google_maps_key') || import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
-  );
+
   const [historyLogs, setHistoryLogs] = useState(() => {
     const val = localStorage.getItem('safeguard_logs');
     if (val) return JSON.parse(val);
@@ -34,22 +32,26 @@ function App() {
       { id: 1, event: 'Safe check-in confirmed with PIN', time: '10:42 AM', date: 'Today', type: 'success' },
       { id: 2, event: 'Safety timer started for 5 minutes', time: '10:37 AM', date: 'Today', type: 'info' },
       { id: 3, event: 'SOS alert triggered', time: '8:15 PM', date: 'Yesterday', type: 'danger' },
-      { id: 4, event: 'Fake call simulated', time: '3:10 PM', date: 'Yesterday', type: 'warning' },
+      { id: 4, event: 'Loud alarm activated', time: '3:10 PM', date: 'Yesterday', type: 'warning' },
       { id: 5, event: 'Safe check-in confirmed with PIN', time: '9:02 AM', date: '2 days ago', type: 'success' },
     ];
   });
 
-  const sosAudioRef = useRef(null);
   const vibrationIntervalRef = useRef(null);
 
   const handleSetPinCode = (pin) => { setPinCode(pin); localStorage.setItem('safeguard_pin_code', pin); };
   const handleSetSirenVolume = (vol) => { setSirenVolume(vol); localStorage.setItem('safeguard_siren_volume', vol.toString()); };
   const handleSetEmergencyToggles = (t) => { setEmergencyToggles(t); localStorage.setItem('safeguard_emergency_toggles', JSON.stringify(t)); };
-  const handleSetGoogleMapsApiKey = (key) => { setGoogleMapsApiKey(key); localStorage.setItem('safeguard_google_maps_key', key); };
 
   const addLog = (event, type = 'info') => {
     const now = new Date();
-    const newLog = { id: Date.now(), event, time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), date: 'Today', type };
+    const newLog = {
+      id: Date.now(),
+      event,
+      time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      date: 'Today',
+      type,
+    };
     setHistoryLogs(prev => {
       const updated = [newLog, ...prev];
       localStorage.setItem('safeguard_logs', JSON.stringify(updated));
@@ -57,28 +59,26 @@ function App() {
     });
   };
 
-  const handleClearLogs = () => { setHistoryLogs([]); localStorage.setItem('safeguard_logs', JSON.stringify([])); };
+  const handleClearLogs = () => {
+    setHistoryLogs([]);
+    localStorage.setItem('safeguard_logs', JSON.stringify([]));
+  };
 
+  // SOS — vibration only, NO siren (siren lives in EmergencyActions loud alarm)
   useEffect(() => {
-    if (!sosAudioRef.current) {
-      sosAudioRef.current = new Audio('/siren.mp3');
-      sosAudioRef.current.loop = true;
-    }
     if (isSOSActive) {
-      sosAudioRef.current.volume = sirenVolume;
-      sosAudioRef.current.play().catch(e => console.log('Audio blocked:', e));
       if ('vibrate' in navigator) {
         navigator.vibrate([500, 300, 500, 300, 500]);
-        vibrationIntervalRef.current = setInterval(() => navigator.vibrate([500, 300, 500, 300, 500]), 3000);
+        vibrationIntervalRef.current = setInterval(() => {
+          navigator.vibrate([500, 300, 500, 300, 500]);
+        }, 3000);
       }
     } else {
-      sosAudioRef.current.pause();
-      sosAudioRef.current.currentTime = 0;
       clearInterval(vibrationIntervalRef.current);
       if ('vibrate' in navigator) navigator.vibrate(0);
     }
     return () => clearInterval(vibrationIntervalRef.current);
-  }, [isSOSActive, sirenVolume]);
+  }, [isSOSActive]);
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -88,8 +88,8 @@ function App() {
             <SOSButton isSOSActive={isSOSActive} setIsSOSActive={setIsSOSActive} addLog={addLog} />
             <CheckInTimer isSOSActive={isSOSActive} setIsSOSActive={setIsSOSActive} pinCode={pinCode} addLog={addLog} />
             <LocationSharing />
-            <EmergencyActions />
-            <SafeRoutes googleMapsApiKey={googleMapsApiKey} />
+            <EmergencyActions sirenVolume={sirenVolume} />
+            <SafeRoutes />
           </>
         );
       case 'contacts': return <ContactsAndHelp />;
@@ -100,7 +100,6 @@ function App() {
             pinCode={pinCode} setPinCode={handleSetPinCode}
             sirenVolume={sirenVolume} setSirenVolume={handleSetSirenVolume}
             emergencyToggles={emergencyToggles} setEmergencyToggles={handleSetEmergencyToggles}
-            googleMapsApiKey={googleMapsApiKey} setGoogleMapsApiKey={handleSetGoogleMapsApiKey}
             addLog={addLog}
           />
         );
@@ -111,9 +110,7 @@ function App() {
   return (
     <div className="app-container">
       <header className="header">
-        <div className="header-logo-icon">
-          <Shield size={18} />
-        </div>
+        <div className="header-logo-icon"><Shield size={18} /></div>
         <h1>SafeGuard</h1>
       </header>
       <main className="main-content">{renderTabContent()}</main>
